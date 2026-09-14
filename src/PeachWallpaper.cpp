@@ -42,9 +42,6 @@ void PeachWallpaper::Update() {
     auto last_time = std::chrono::steady_clock::now();
 
     while (m_running) {
-        if (!m_backend->ProcessEvents())
-            break;
-
         auto now = std::chrono::steady_clock::now();
         float delta_time =
             std::chrono::duration<float>(now - last_time).count();
@@ -58,6 +55,9 @@ void PeachWallpaper::Update() {
         if (!m_renderer->SwapBuffers()) {
             break;
         }
+
+        if (!PollEvents())
+            break;
     }
 }
 
@@ -109,6 +109,13 @@ bool PeachWallpaper::LoadConfig(const std::string &config) {
     }
 
     if (!m_renderable)
+        return false;
+
+    return true;
+}
+
+bool PeachWallpaper::PollEvents() {
+    if (!m_backend->ProcessEvents(m_poll_mode))
         return false;
 
     return true;

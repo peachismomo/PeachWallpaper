@@ -6,6 +6,7 @@
 
 Peach::PeachWallpaper engine;
 
+/** @brief Loads the wallpaper configuration and runs the wallpaper runtime. */
 int main(int argc, char **argv) {
     std::filesystem::path exe_dir =
         std::filesystem::read_symlink("/proc/self/exe").parent_path();

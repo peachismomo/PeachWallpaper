@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Backend.hpp"
+#include "../WindowSystemBackend.hpp"
 #include "wlr-layer-shell-client-protocol.h"
 #include <wayland-client-core.h>
 #include <wayland-client-protocol.h>
@@ -24,7 +24,7 @@ namespace Peach {
  * registered below. Nothing here draws pixels; it only negotiates *where*
  * and *how big* the surface this backend owns should be.
  */
-class WaylandBackend : public Backend {
+class WaylandBackend : public WindowSystemBackend {
   public:
     /** @brief Creates an uninitialized backend. */
     WaylandBackend();
@@ -44,12 +44,12 @@ class WaylandBackend : public Backend {
     bool Initialize() override;
 
     /**
-     * @brief Non-blocking pump of the Wayland connection, meant to be
-     * called once per rendered frame. Checks whether the compositor has
-     * sent anything new and dispatches it if so; never blocks waiting.
+     * @brief Pumps the Wayland connection using the requested poll mode.
+     * @param poll_mode ACTIVE_POLL_MODE checks for compositor events without
+     * waiting; IDLE_POLL_MODE blocks until a Wayland event arrives.
      * @return false if the connection is closed or unusable.
      */
-    bool ProcessEvents() override;
+    bool ProcessEvents(uint32_t poll_mode) override;
 
     /** @brief Releases all Wayland resources owned by the backend. */
     void Shutdown() override;
@@ -118,6 +118,14 @@ class WaylandBackend : public Backend {
     void *GetNativeWindowHandle() const override;
 
   private:
+    /**
+     * @brief Handles registry announcements and binds supported globals.
+     * @param data The WaylandBackend receiving the announcement.
+     * @param wl_registry Registry that emitted the event.
+     * @param name Compositor-assigned global name.
+     * @param interface Advertised Wayland interface name.
+     * @param version Highest version advertised by the compositor.
+     */
     static void global_listener(void *data, struct wl_registry *wl_registry,
                                 uint32_t name, const char *interface,
                                 uint32_t version);
@@ -165,7 +173,7 @@ class WaylandBackend : public Backend {
      * @brief The client-compositor connection (a Unix socket under the
      * hood). This is the root of everything else in this class: every other
      * proxy is a request/reply conversation carried over this connection,
-     * and it's what gets dispatched/rounftripped to pump incoming events.
+     * and it's what gets dispatched/roundtripped to pump incoming events.
      * Obtained once from wl_display_connect() and held until Shutdown().
      */
     wl_display *m_display{nullptr};

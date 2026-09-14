@@ -18,6 +18,7 @@ namespace Peach {
  */
 class Renderer {
   public:
+    /** @brief Releases resources owned by the concrete renderer. */
     virtual ~Renderer() = default;
 
     /**

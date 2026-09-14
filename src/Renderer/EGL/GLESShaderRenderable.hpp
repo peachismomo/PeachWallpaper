@@ -8,7 +8,10 @@
 namespace Peach {
 class GLESShaderRenderable : public Renderable {
   public:
+    /** @brief Loads a shader renderable configuration and GPU resources. */
     explicit GLESShaderRenderable(const std::string &config);
+
+    /** @brief Releases the shader and vertex-buffer resources. */
     ~GLESShaderRenderable() override { Destroy(); }
 
     GLESShaderRenderable() = delete;
@@ -17,8 +20,13 @@ class GLESShaderRenderable : public Renderable {
     GLESShaderRenderable(GLESShaderRenderable &&) = delete;
     GLESShaderRenderable &operator=(GLESShaderRenderable &&) = delete;
 
+    /** @brief Advances the shader's elapsed-time uniform. */
     void Update(float time) override;
+
+    /** @brief Binds the shader, uploads uniforms, and draws the quad. */
     void Draw() override;
+
+    /** @brief Releases the shader and vertex-buffer resources. */
     void Destroy() override;
 
   private:

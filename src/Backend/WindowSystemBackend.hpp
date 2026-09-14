@@ -2,6 +2,9 @@
 
 #include <cstdint>
 
+#define IDLE_POLL_MODE 0
+#define ACTIVE_POLL_MODE 1
+
 namespace Peach {
 
 /**
@@ -16,9 +19,9 @@ namespace Peach {
  * platform-specific concepts into this interface would defeat the point
  * of having it.
  */
-class Backend {
+class WindowSystemBackend {
   public:
-    virtual ~Backend() = default;
+    virtual ~WindowSystemBackend() = default;
 
     /**
      * @brief Connects to the platform's display server and prepares the
@@ -28,11 +31,12 @@ class Backend {
     virtual bool Initialize() = 0;
 
     /**
-     * @brief Non-blocking pump of pending platform events, meant to be
-     * called once per rendered frame.
+     * @brief Pumps platform events using the requested scheduling mode.
+     * @param poll_mode ACTIVE_POLL_MODE checks for events without waiting;
+     * IDLE_POLL_MODE may block until a platform event arrives.
      * @return false if the connection is closed or unusable.
      */
-    virtual bool ProcessEvents() = 0;
+    virtual bool ProcessEvents(uint32_t poll_mode) = 0;
 
     /** @brief Releases all resources owned by the backend. */
     virtual void Shutdown() = 0;

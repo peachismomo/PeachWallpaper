@@ -34,11 +34,19 @@
         GLASSERT(LogOGLCall(#x, __FILE__, __LINE__));                          \
     } while (0)
 
+/** @brief Clears all currently pending OpenGL errors. */
 inline void ClearOGLError() {
     while (glGetError() != GL_NO_ERROR)
         ;
 }
 
+/**
+ * @brief Logs pending OpenGL errors for a call site.
+ * @param function Source expression or function name being checked.
+ * @param file Source file containing the checked call.
+ * @param line Source line containing the checked call.
+ * @return true when no OpenGL error was pending; otherwise false.
+ */
 inline bool LogOGLCall(const char *function, const char *file, int line) {
     while (GLenum err = glGetError()) {
         std::string err_name;

@@ -92,7 +92,11 @@ bool WaylandBackend::Initialize() {
     return true;
 }
 
-bool WaylandBackend::ProcessEvents() {
+bool WaylandBackend::ProcessEvents(uint32_t poll_mode) {
+    if (poll_mode == IDLE_POLL_MODE) {
+        return wl_display_dispatch(m_display) != -1;
+    }
+
     // wl_display_dispatch_pending() only processes events already sitting
     // in the local queue - it never reads the socket - so this follows
     // libwayland's prepare_read/poll/read_events pattern to check for new

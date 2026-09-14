@@ -5,9 +5,7 @@
 #include <glaze/json/read.hpp>
 #include <stdexcept>
 
-#include "../GlmGlaze.hpp"
 #include "GLES.hpp"
-#include "ur_log/ur-log.h"
 
 namespace Peach {
 GLESShaderRenderable::GLESShaderRenderable(const std::string &config)
