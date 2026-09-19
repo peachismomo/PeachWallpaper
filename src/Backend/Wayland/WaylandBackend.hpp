@@ -87,6 +87,9 @@ class WaylandBackend : public WindowSystemBackend {
     /** @brief Returns the layer-shell role wrapping the wallpaper surface. */
     zwlr_layer_surface_v1 *GetLayerSurface();
 
+    void SetSeat(wl_seat* seat);
+    wl_keyboard* GetSeat();
+
     /** @brief Stores the Wayland display connection. */
     void SetDisplay(wl_display *display);
 
@@ -224,6 +227,9 @@ class WaylandBackend : public WindowSystemBackend {
      * surface once wrapped by `m_layer_surface` below.
      */
     wl_surface *m_surface{nullptr};
+
+    wl_keyboard* m_keyboard{nullptr};
+    wl_seat* m_seat{nullptr};
 
     /**
      * @brief The layer-shell role wrapping `m_surface`, turning it into a

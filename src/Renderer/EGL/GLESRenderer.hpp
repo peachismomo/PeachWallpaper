@@ -55,6 +55,7 @@ class GLESRenderer : public Renderer {
     EGLConfig m_config{nullptr};
     EGLContext m_egl_ctx{nullptr};
     EGLSurface m_egl_surface{nullptr};
+    bool m_egl_initialized{false};
 
     wl_egl_window *m_egl_window{nullptr};
 

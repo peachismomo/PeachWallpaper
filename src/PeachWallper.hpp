@@ -1,9 +1,14 @@
 #pragma once
 
 #include "Backend/WindowSystemBackend.hpp"
+#include "IPC/Socket.hpp"
 #include "Renderer/Renderable.hpp"
 #include "Renderer/Renderer.hpp"
+#include <deque>
+#include <atomic>
 #include <memory>
+#include <mutex>
+#include <thread>
 
 namespace Peach {
 class PeachWallpaper {
@@ -11,7 +16,7 @@ class PeachWallpaper {
     /** @brief Creates an unstarted wallpaper runtime. */
     PeachWallpaper();
 
-    /** @brief Shuts down the runtime if it is still running. */
+    /** @brief Shuts down the runtime and releases owned resources. */
     ~PeachWallpaper() { Shutdown(); }
 
     /**
@@ -40,9 +45,22 @@ class PeachWallpaper {
     /** @brief Processes backend events using the current poll mode. */
     bool PollEvents();
 
+    bool PollSocket();
+    void DrainCommands();
+
+    void HandleCommand(uint8_t code);
+
     std::shared_ptr<WindowSystemBackend> m_backend;
     std::shared_ptr<Renderer> m_renderer;
     std::shared_ptr<Renderable> m_renderable;
+
+    Socket m_socket;
+
+    std::thread m_socket_poll_thread;
+
+    std::atomic_bool m_polling{false};
+    std::mutex m_command_mutex;
+    std::deque<uint8_t> m_commands;
 
     struct Config {
         enum RenderableType { IMAGE, VIDEO, SHADER, PARTICLE, Scene3D };
@@ -50,7 +68,7 @@ class PeachWallpaper {
         std::string wallpaper_file{};
         bool vsync{};
     };
-    bool m_running{false};
+    std::atomic_bool m_running{false};
     Config m_config{};
     uint32_t m_poll_mode{ACTIVE_POLL_MODE};
 };

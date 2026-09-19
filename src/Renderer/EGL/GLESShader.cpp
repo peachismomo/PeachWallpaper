@@ -29,6 +29,7 @@ bool GLESShader::Load(const std::string &filepath) {
         if (!ret) {
             UR_ERROR("Failed to compile shader");
             glDeleteProgram(m_program_id);
+            m_program_id = 0;
             return false;
         }
     }
@@ -53,6 +54,7 @@ bool GLESShader::Load(const std::string &filepath) {
         UR_ERROR(log_str.c_str());
 
         GL_CALL(glDeleteProgram(m_program_id));
+        m_program_id = 0;
 
         return false;
     }

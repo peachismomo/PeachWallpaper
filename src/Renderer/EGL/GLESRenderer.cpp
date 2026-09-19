@@ -20,12 +20,15 @@ bool GLESRenderer::Initialize(void *native_display, void *native_window,
     EGLBoolean ret = eglInitialize(m_egl_display, &m_major_ver, &m_minor_ver);
     if (ret != EGL_TRUE) {
         UR_ERROR("Failed to initialize EGL");
+        Shutdown();
         return false;
     }
+    m_egl_initialized = true;
 
     ret = eglBindAPI(EGL_OPENGL_ES_API);
     if (ret != EGL_TRUE) {
         UR_ERROR("Failed to bind EGL_OPENGL_ES_API");
+        Shutdown();
         return false;
     }
     static EGLint s_config_attribs[] = {EGL_SURFACE_TYPE,
@@ -47,6 +50,7 @@ bool GLESRenderer::Initialize(void *native_display, void *native_window,
                           &num_config);
     if (ret != EGL_TRUE || num_config == 0) {
         UR_ERROR("Failed to choose EGL config");
+        Shutdown();
         return false;
     }
     m_egl_window = wl_egl_window_create(
@@ -54,6 +58,7 @@ bool GLESRenderer::Initialize(void *native_display, void *native_window,
 
     if (!m_egl_window) {
         UR_ERROR("Failed to create EGL window");
+        Shutdown();
         return false;
     }
     m_egl_surface =
@@ -61,6 +66,7 @@ bool GLESRenderer::Initialize(void *native_display, void *native_window,
 
     if (!m_egl_surface) {
         UR_ERROR("Failed to create EGL surface");
+        Shutdown();
         return false;
     }
 
@@ -72,6 +78,7 @@ bool GLESRenderer::Initialize(void *native_display, void *native_window,
 
     if (!m_egl_ctx) {
         UR_ERROR("Failed to create EGL context");
+        Shutdown();
         return false;
     }
 
@@ -79,6 +86,7 @@ bool GLESRenderer::Initialize(void *native_display, void *native_window,
         eglMakeCurrent(m_egl_display, m_egl_surface, m_egl_surface, m_egl_ctx);
     if (ret != EGL_TRUE) {
         UR_ERROR("Failed to make EGL ctx current");
+        Shutdown();
         return false;
     }
 
@@ -124,36 +132,35 @@ bool GLESRenderer::SwapBuffers() {
 void GLESRenderer::SetVSync(bool enabled) { m_vsync = enabled; }
 
 void GLESRenderer::Shutdown() {
-    if (!m_initialized)
-        return;
-
-    if (!m_egl_display)
-        return;
-
-    if (eglMakeCurrent(m_egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE,
-                       EGL_NO_CONTEXT) != EGL_TRUE) {
-        UR_ERROR("Failed to unbind EGL display");
+    if (m_egl_display && m_egl_initialized) {
+        if (eglMakeCurrent(m_egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE,
+                           EGL_NO_CONTEXT) != EGL_TRUE) {
+            UR_ERROR("Failed to unbind EGL display");
+        }
     }
 
-    if (m_egl_ctx) {
+    if (m_egl_ctx && m_egl_display && m_egl_initialized) {
         eglDestroyContext(m_egl_display, m_egl_ctx);
-        m_egl_ctx = nullptr;
     }
+    m_egl_ctx = nullptr;
 
-    if (m_egl_surface) {
+    if (m_egl_surface && m_egl_display && m_egl_initialized) {
         eglDestroySurface(m_egl_display, m_egl_surface);
-        m_egl_surface = nullptr;
     }
+    m_egl_surface = nullptr;
+
+    if (m_egl_display && m_egl_initialized) {
+        if (eglTerminate(m_egl_display) != EGL_TRUE) {
+            UR_ERROR("Failed to terminate EGL");
+        }
+    }
+    m_egl_display = nullptr;
+    m_egl_initialized = false;
 
     if (m_egl_window) {
         wl_egl_window_destroy(m_egl_window);
         m_egl_window = nullptr;
     }
-
-    if (eglTerminate(m_egl_display) != EGL_TRUE) {
-        UR_ERROR("Failed to terminate EGL");
-    }
-    m_egl_display = nullptr;
 
     m_initialized = false;
 }

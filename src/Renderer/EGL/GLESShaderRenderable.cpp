@@ -1,5 +1,7 @@
 #include "GLESShaderRenderable.hpp"
 
+#include "../GlmGlaze.hpp"
+
 #include <GLES2/gl2.h>
 #include <cstddef>
 #include <glaze/json/read.hpp>
